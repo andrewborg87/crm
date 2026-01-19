@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { Min, Max, IsInt, IsString } from 'class-validator';
 
-import { validateConfig } from '@project/utils';
+import { validateConfig } from '@crm/utils';
 
 import { AppConfig } from './app-config.type';
 

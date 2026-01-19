@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/nestjs';
 
-import { Env } from '@project/utils';
+import { Env } from '@crm/utils';
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({

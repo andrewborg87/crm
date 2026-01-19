@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { SwaggerModule } from '@project/swagger';
-import { DatabaseModule } from '@project/database';
-import { ValidationModule } from '@project/validation';
+import { SwaggerModule } from '@crm/swagger';
+import { DatabaseModule } from '@crm/database';
+import { ValidationModule } from '@crm/validation';
 
 import appConfig from './config/app/app.config';
 import databaseConfig from './config/database/database.config';
