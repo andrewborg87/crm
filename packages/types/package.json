@@ -1,6 +1,7 @@
 {
   "name": "@crm/types",
   "version": "1.0.0",
+  "author": "Bizcuits Solutions LTD.",
   "private": true,
   "license": "MIT",
   "main": "dist",

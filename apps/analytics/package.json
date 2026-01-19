@@ -1,8 +1,8 @@
 {
   "name": "@crm/analytics",
   "version": "1.0.0",
-  "description": "",
-  "author": "",
+  "description": "Analytics service powered by CubeJS",
+  "author": "Bizcuits Solutions LTD.",
   "private": true,
   "license": "MIT",
   "dependencies": {
