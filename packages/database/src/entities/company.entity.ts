@@ -27,7 +27,7 @@ import { UserAuthSessionEntity } from './user-auth-session.entity';
 import { UserNotificationEntity } from './user-notifications.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
 import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
-import { WalletTransactionHistory } from './wallet_transaction_history.entity';
+import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'company' })
 @Unique(['domain'])
@@ -98,9 +98,9 @@ export class CompanyEntity {
   @JoinColumn()
   walletTransactions: WalletTransactionEntity[];
 
-  @OneToMany(() => WalletTransactionHistory, (e) => e.company)
+  @OneToMany(() => WalletTransactionHistoryEntity, (e) => e.company)
   @JoinColumn()
-  walletTransactionHistory: WalletTransactionHistory[];
+  walletTransactionHistory: WalletTransactionHistoryEntity[];
 
   // Many-to-One relations
   ////////////////////////////////////////////////////////////////////

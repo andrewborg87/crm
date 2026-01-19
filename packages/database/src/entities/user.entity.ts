@@ -20,7 +20,7 @@ import { TradingAccountEntity } from './trading-account.entity';
 import { UserAuthSessionEntity } from './user-auth-session.entity';
 import { UserNotificationEntity } from './user-notifications.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
-import { WalletTransactionHistory } from './wallet_transaction_history.entity';
+import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'user' })
 @Unique(['email'])
@@ -91,9 +91,9 @@ export class UserEntity {
   @JoinColumn()
   walletTransactions: WalletTransactionEntity[];
 
-  @OneToMany(() => WalletTransactionHistory, (e) => e.user)
+  @OneToMany(() => WalletTransactionHistoryEntity, (e) => e.user)
   @JoinColumn()
-  walletTransactionHistory: WalletTransactionHistory[];
+  walletTransactionHistory: WalletTransactionHistoryEntity[];
 
   // Many-to-One relations
   ////////////////////////////////////////////////////////////////////

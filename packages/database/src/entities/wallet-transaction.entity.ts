@@ -16,7 +16,7 @@ import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
 import { CompanyEntity } from './company.entity';
 import { TradingAccountEntity } from './trading-account.entity';
-import { WalletTransactionHistory } from './wallet_transaction_history.entity';
+import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'wallet_transaction' })
 export class WalletTransactionEntity {
@@ -41,9 +41,9 @@ export class WalletTransactionEntity {
   // One-to-Many relations
   ////////////////////////////////////////////////////////////////////
 
-  @OneToMany(() => WalletTransactionHistory, (e) => e.walletTransaction)
+  @OneToMany(() => WalletTransactionHistoryEntity, (e) => e.walletTransaction)
   @JoinColumn()
-  history: WalletTransactionHistory[];
+  history: WalletTransactionHistoryEntity[];
 
   // Many-to-One relations
   ////////////////////////////////////////////////////////////////////

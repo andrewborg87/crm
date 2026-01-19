@@ -17,7 +17,7 @@ import { CompanyEntity } from './company.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
 
 @Entity({ name: 'wallet_transaction_history' })
-export class WalletTransactionHistory {
+export class WalletTransactionHistoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

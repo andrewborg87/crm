@@ -16,7 +16,7 @@ import { AssetType } from '@crm/types';
 import { UserEntity } from './user.entity';
 import { CompanyEntity } from './company.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
-import { WalletTransactionHistory } from './wallet_transaction_history.entity';
+import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'wallet' })
 @Unique(['userId', 'currency'])
@@ -44,9 +44,9 @@ export class WalletEntity {
   @JoinColumn()
   transactions: WalletTransactionEntity[];
 
-  @OneToMany(() => WalletTransactionHistory, (e) => e.wallet)
+  @OneToMany(() => WalletTransactionHistoryEntity, (e) => e.wallet)
   @JoinColumn()
-  transactionHistory: WalletTransactionHistory[];
+  transactionHistory: WalletTransactionHistoryEntity[];
 
   // Many-to-One relations
   ////////////////////////////////////////////////////////////////////
