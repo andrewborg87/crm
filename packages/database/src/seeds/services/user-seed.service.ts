@@ -24,7 +24,7 @@ export class UserSeedService {
         user.firstName = 'John';
         user.lastName = 'Doe';
         user.email = 'user@example.com';
-        user.password = Cryptography.hash('P@ssword123');
+        user.passwordHash = Cryptography.hash('P@ssword123');
         await this.userRepo.save(user);
       }
 
@@ -33,7 +33,7 @@ export class UserSeedService {
         superUser.firstName = 'John';
         superUser.lastName = 'Doe (super)';
         superUser.email = 'super_user@example.com';
-        superUser.password = Cryptography.hash('P@ssword123');
+        superUser.passwordHash = Cryptography.hash('P@ssword123');
         await this.userRepo.save(superUser);
       }
 

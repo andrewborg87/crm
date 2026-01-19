@@ -16,12 +16,16 @@ import { CompanyType } from '@crm/types';
 
 import { UserEntity } from './user.entity';
 import { ServerEntity } from './server.entity';
+import { WalletEntity } from './wallet.entity';
 import { UserGroupEntity } from './user-group.entity';
 import { BillingInfoEntity } from './billing-info.entity';
-import { AuthSessionEntity } from './auth-session.entity';
 import { OrganizationEntity } from './organization.entity';
 import { TenantCompanyEntity } from './tenant-company.entity';
 import { TradingAccountEntity } from './trading-account.entity';
+import { PlatformClientEntity } from './platform-client.entity';
+import { UserAuthSessionEntity } from './user-auth-session.entity';
+import { UserNotificationEntity } from './user-notifications.entity';
+import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
 
 @Entity({ name: 'company' })
 @Unique(['domain'])
@@ -46,13 +50,17 @@ export class CompanyEntity {
 
   // One-to-Many relations
 
-  @OneToMany(() => AuthSessionEntity, (e) => e.company)
+  @OneToMany(() => PlatformClientEntity, (e) => e.company)
   @JoinColumn()
-  authSessions: AuthSessionEntity[];
+  platformClients: PlatformClientEntity[];
 
   @OneToMany(() => ServerEntity, (e) => e.company)
   @JoinColumn()
   servers: ServerEntity[];
+
+  @OneToMany(() => TenantAuthSessionEntity, (e) => e.company)
+  @JoinColumn()
+  tenantAuthSessions: TenantAuthSessionEntity[];
 
   @OneToMany(() => TenantCompanyEntity, (e) => e.company)
   @JoinColumn()
@@ -62,13 +70,25 @@ export class CompanyEntity {
   @JoinColumn()
   tradingAccounts: TradingAccountEntity[];
 
+  @OneToMany(() => UserAuthSessionEntity, (e) => e.company)
+  @JoinColumn()
+  userAuthSessions: UserAuthSessionEntity[];
+
   @OneToMany(() => UserGroupEntity, (e) => e.company)
   @JoinColumn()
   userGroups: UserGroupEntity[];
 
+  @OneToMany(() => UserNotificationEntity, (e) => e.company)
+  @JoinColumn()
+  userNotifications: UserNotificationEntity[];
+
   @OneToMany(() => UserEntity, (e) => e.company)
   @JoinColumn()
   users: UserEntity[];
+
+  @OneToMany(() => WalletEntity, (e) => e.company)
+  @JoinColumn()
+  wallets: WalletEntity[];
 
   // Many-to-One relations
 

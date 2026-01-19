@@ -15,6 +15,7 @@ import { TenantStatus } from '@crm/types';
 
 import { OrganizationEntity } from './organization.entity';
 import { TenantCompanyEntity } from './tenant-company.entity';
+import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
 
 @Entity({ name: 'tenant' })
 @Unique(['email'])
@@ -43,7 +44,11 @@ export class TenantEntity {
 
   // One-to-Many relations
 
-  @OneToMany(() => TenantCompanyEntity, (e) => e.company)
+  @OneToMany(() => TenantAuthSessionEntity, (e) => e.tenant)
+  @JoinColumn()
+  authSessions: TenantAuthSessionEntity[];
+
+  @OneToMany(() => TenantCompanyEntity, (e) => e.tenant)
   @JoinColumn()
   tenantCompanies: TenantCompanyEntity[];
 

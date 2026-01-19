@@ -13,9 +13,9 @@ import {
 import { UserEntity } from './user.entity';
 import { CompanyEntity } from './company.entity';
 
-@Entity({ name: 'auth_session' })
+@Entity({ name: 'user_auth_session' })
 @Unique(['userId', 'createdAt'])
-export class AuthSessionEntity {
+export class UserAuthSessionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -30,7 +30,7 @@ export class AuthSessionEntity {
 
   // Many-to-One relations
 
-  @ManyToOne(() => CompanyEntity, (e) => e.authSessions, {
+  @ManyToOne(() => CompanyEntity, (e) => e.userAuthSessions, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })

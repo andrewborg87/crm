@@ -14,9 +14,11 @@ import {
 import { UserStatus } from '@crm/types';
 
 import { ServerEntity } from './server.entity';
+import { WalletEntity } from './wallet.entity';
 import { CompanyEntity } from './company.entity';
-import { AuthSessionEntity } from './auth-session.entity';
 import { TradingAccountEntity } from './trading-account.entity';
+import { UserAuthSessionEntity } from './user-auth-session.entity';
+import { UserNotificationEntity } from './user-notifications.entity';
 
 @Entity({ name: 'user' })
 @Unique(['email'])
@@ -25,7 +27,7 @@ export class UserEntity {
   id: string;
 
   @Column({ type: 'text' })
-  firstName?: string;
+  firstName: string;
 
   @Column({ type: 'text', nullable: true })
   middleName?: string | null;
@@ -66,13 +68,21 @@ export class UserEntity {
 
   // One-to-Many relations
 
-  @OneToMany(() => AuthSessionEntity, (e) => e.user)
+  @OneToMany(() => UserAuthSessionEntity, (e) => e.user)
   @JoinColumn()
-  authSessions: AuthSessionEntity[];
+  authSessions: UserAuthSessionEntity[];
+
+  @OneToMany(() => UserNotificationEntity, (e) => e.user)
+  @JoinColumn()
+  notifications: UserNotificationEntity[];
 
   @OneToMany(() => TradingAccountEntity, (e) => e.user)
   @JoinColumn()
   tradingAccounts: TradingAccountEntity[];
+
+  @OneToMany(() => WalletEntity, (e) => e.user)
+  @JoinColumn()
+  wallets: WalletEntity[];
 
   // Many-to-One relations
 
