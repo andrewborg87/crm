@@ -10,27 +10,23 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { UserEntity } from './user.entity';
+import { Role } from '@crm/types';
+
+import { TenantEntity } from './tenant.entity';
 import { CompanyEntity } from './company.entity';
 
-@Entity({ name: 'auth_session' })
-@Unique(['userId', 'createdAt'])
-export class AuthSessionEntity {
+@Entity({ name: 'tenant_company' })
+@Unique(['tenantId', 'companyId'])
+export class TenantCompanyEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text' })
-  hash: string;
-
-  @Column({ type: 'text' })
-  ipAddress: string;
-
-  @Column({ type: 'text', nullable: true })
-  userAgent?: string | null;
+  @Column({ type: 'enum', enum: Role, array: true })
+  roles: Role[];
 
   // Many-to-One relations
 
-  @ManyToOne(() => CompanyEntity, (e) => e.authSessions, {
+  @ManyToOne(() => CompanyEntity, (e) => e.tenantCompanies, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })
@@ -41,16 +37,16 @@ export class AuthSessionEntity {
   @Column({ type: 'text' })
   companyId: string;
 
-  @ManyToOne(() => UserEntity, (e) => e.authSessions, {
+  @ManyToOne(() => TenantEntity, (e) => e.tenantCompanies, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'userId' })
-  user: UserEntity;
+  @JoinColumn({ name: 'tenantId' })
+  tenant: TenantEntity;
 
   @Index()
   @Column({ type: 'text' })
-  userId: string;
+  tenantId: string;
 
   @CreateDateColumn()
   createdAt: Date;

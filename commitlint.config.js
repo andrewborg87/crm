@@ -7,8 +7,13 @@ module.exports = {
       'always',
       [
         'analytics',
+        'broker',
+        'compliance',
         'core',
         'gateway',
+        'payment',
+        'prop',
+        'user'
       ],
     ],
     'subject-case': [2, 'always', 'sentence-case'],

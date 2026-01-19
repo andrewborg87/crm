@@ -1,36 +1,50 @@
 import {
   Index,
-  Entity,
   Column,
+  Entity,
   Unique,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { UserEntity } from './user.entity';
 import { CompanyEntity } from './company.entity';
 
-@Entity({ name: 'auth_session' })
-@Unique(['userId', 'createdAt'])
-export class AuthSessionEntity {
+@Entity({ name: 'billing_info' })
+@Unique(['company_id'])
+export class BillingInfoEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'text' })
-  hash: string;
+  name: string;
 
   @Column({ type: 'text' })
-  ipAddress: string;
+  addressLine1: string;
 
   @Column({ type: 'text', nullable: true })
-  userAgent?: string | null;
+  addressLine2?: string | null;
 
-  // Many-to-One relations
+  @Column({ type: 'text' })
+  city: string;
 
-  @ManyToOne(() => CompanyEntity, (e) => e.authSessions, {
+  @Column({ type: 'text' })
+  postCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  state?: string | null;
+
+  @Column({ type: 'varchar', length: 2 })
+  country: string;
+
+  @Column({ type: 'text', nullable: true })
+  vatId?: string | null;
+
+  // One-to-One relations
+
+  @OneToOne(() => CompanyEntity, (e) => e.billingInfo, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   })
@@ -40,17 +54,6 @@ export class AuthSessionEntity {
   @Index()
   @Column({ type: 'text' })
   companyId: string;
-
-  @ManyToOne(() => UserEntity, (e) => e.authSessions, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'userId' })
-  user: UserEntity;
-
-  @Index()
-  @Column({ type: 'text' })
-  userId: string;
 
   @CreateDateColumn()
   createdAt: Date;
