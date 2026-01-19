@@ -43,6 +43,7 @@ export class TenantEntity {
   status: TenantStatus;
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToMany(() => TenantAuthSessionEntity, (e) => e.tenant)
   @JoinColumn()
@@ -53,6 +54,7 @@ export class TenantEntity {
   tenantCompanies: TenantCompanyEntity[];
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => OrganizationEntity, (e) => e.tenants, {
     onUpdate: 'CASCADE',

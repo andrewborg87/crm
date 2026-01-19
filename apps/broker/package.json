@@ -10,8 +10,6 @@
     "lint": "eslint \"{src,test}/**/*.ts\""
   },
   "dependencies": {
-    "@nestjs/axios": "^4.0.1",
-    "@nestjs/bull": "^11.0.4",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -28,7 +26,6 @@
     "@crm/utils": "workspace:^",
     "@crm/validation": "workspace:^",
     "@sentry/nestjs": "^9.32.0",
-    "bull": "^4.16.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "kafkajs": "^2.2.4",

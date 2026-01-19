@@ -9,6 +9,9 @@ export * from './common/sort-dir.enum';
 // Company enums
 export * from './company/company-type.enum';
 
+// Payment enums
+export * from './payment/transaction-status.enum';
+
 // Platform enums
 export * from './platform/monetization.enum';
 export * from './platform/platform.enum';
@@ -25,3 +28,6 @@ export * from './trading-account/trading-account-status.enum';
 
 // User enums
 export * from './user/user-status.enum';
+
+// Wallet enums
+export * from './wallet/wallet-transaction-type.enum';

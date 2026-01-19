@@ -19,6 +19,8 @@ import { CompanyEntity } from './company.entity';
 import { TradingAccountEntity } from './trading-account.entity';
 import { UserAuthSessionEntity } from './user-auth-session.entity';
 import { UserNotificationEntity } from './user-notifications.entity';
+import { WalletTransactionEntity } from './wallet-transaction.entity';
+import { WalletTransactionHistory } from './wallet_transaction_history.entity';
 
 @Entity({ name: 'user' })
 @Unique(['email'])
@@ -67,6 +69,7 @@ export class UserEntity {
   cookiesAcceptedAt?: Date | null;
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToMany(() => UserAuthSessionEntity, (e) => e.user)
   @JoinColumn()
@@ -84,7 +87,16 @@ export class UserEntity {
   @JoinColumn()
   wallets: WalletEntity[];
 
+  @OneToMany(() => WalletTransactionEntity, (e) => e.user)
+  @JoinColumn()
+  walletTransactions: WalletTransactionEntity[];
+
+  @OneToMany(() => WalletTransactionHistory, (e) => e.user)
+  @JoinColumn()
+  walletTransactionHistory: WalletTransactionHistory[];
+
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.users, {
     onUpdate: 'CASCADE',

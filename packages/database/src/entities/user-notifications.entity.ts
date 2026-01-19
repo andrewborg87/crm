@@ -27,6 +27,7 @@ export class UserNotificationEntity {
   openedAt?: Date | null;
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.userNotifications, {
     onUpdate: 'CASCADE',

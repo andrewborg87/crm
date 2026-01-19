@@ -43,6 +43,7 @@ export class BillingInfoEntity {
   vatId?: string | null;
 
   // One-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToOne(() => CompanyEntity, (e) => e.billingInfo, {
     onUpdate: 'CASCADE',

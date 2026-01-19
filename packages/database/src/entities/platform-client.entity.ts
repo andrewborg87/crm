@@ -32,6 +32,7 @@ export class PlatformClientEntity {
   link: string;
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.platformClients, {
     onUpdate: 'CASCADE',

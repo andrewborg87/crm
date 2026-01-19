@@ -25,6 +25,7 @@ export class TenantCompanyEntity {
   roles: Role[];
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.tenantCompanies, {
     onUpdate: 'CASCADE',

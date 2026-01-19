@@ -10,7 +10,7 @@
     "test": "turbo test",
     "prepare": "husky",
     "release": "release-it",
-    "gateway:sample:gen": "pnpm ts-node ./apps/gateway/scripts/gen.ts sample 3001",
+    "gateway:broker:gen": "pnpm ts-node ./apps/gateway/scripts/gen.ts broker 3001",
     "db:migrate:generate": "pnpm --filter @crm/database db:migrate:generate",
     "db:migrate:up": "pnpm --filter @crm/database db:migrate:up",
     "db:migrate:down": "pnpm --filter @crm/database db:migrate:down",

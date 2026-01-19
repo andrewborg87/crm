@@ -22,6 +22,7 @@ export class OrganizationEntity {
   name: string;
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToMany(() => TenantEntity, (e) => e.organizationId)
   @JoinColumn()

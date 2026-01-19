@@ -4,6 +4,7 @@ import {
   Column,
   Unique,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -16,6 +17,7 @@ import { UserEntity } from './user.entity';
 import { ServerEntity } from './server.entity';
 import { CompanyEntity } from './company.entity';
 import { UserGroupEntity } from './user-group.entity';
+import { WalletTransactionEntity } from './wallet-transaction.entity';
 
 @Entity({ name: 'trading_account' })
 @Unique(['serverId', 'platformId'])
@@ -46,7 +48,15 @@ export class TradingAccountEntity {
   @Column({ type: 'timestamp' })
   registeredAt: Date;
 
+  // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
+
+  @OneToMany(() => WalletTransactionEntity, (e) => e.tradingAccount)
+  @JoinColumn()
+  walletTransactions: WalletTransactionEntity[];
+
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.tradingAccounts, {
     onUpdate: 'CASCADE',

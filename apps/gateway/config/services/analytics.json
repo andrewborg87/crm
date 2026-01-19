@@ -1,0 +1,105 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "endpoints": [
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/sql",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "method": "GET",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analytics/sql",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "method": "POST",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "OPTIONS",
+      "endpoint": "/api/analytics/sql",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "method": "OPTIONS",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/meta",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/meta",
+          "method": "GET",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analytics/meta",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/meta",
+          "method": "POST",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "OPTIONS",
+      "endpoint": "/api/analytics/meta",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/meta",
+          "method": "OPTIONS",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/load",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/load",
+          "method": "GET",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/analytics/load",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/load",
+          "method": "POST",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    },
+    {
+      "method": "OPTIONS",
+      "endpoint": "/api/analytics/load",
+      "backend": [
+        {
+          "url_pattern": "/cubejs-api/v1/load",
+          "method": "OPTIONS",
+          "host": ["http://analytics:4000"]
+        }
+      ]
+    }
+  ]
+}

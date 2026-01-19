@@ -33,12 +33,14 @@ export class UserGroupEntity {
   platform: Platform;
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToMany(() => TradingAccountEntity, (e) => e.userGroup)
   @JoinColumn()
   tradingAccounts: TradingAccountEntity[];
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.userGroups, {
     onUpdate: 'CASCADE',

@@ -41,6 +41,7 @@ export class ServerEntity {
   settings: Record<string, any>;
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
   @OneToMany(() => TradingAccountEntity, (e) => e.server)
   @JoinColumn()
@@ -55,6 +56,7 @@ export class ServerEntity {
   users: UserEntity[];
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.servers, {
     onUpdate: 'CASCADE',

@@ -15,8 +15,8 @@ import { AssetType } from '@crm/types';
 
 import { UserEntity } from './user.entity';
 import { CompanyEntity } from './company.entity';
-import { TradingAccountEntity } from './trading-account.entity';
-import { UserAuthSessionEntity } from './user-auth-session.entity';
+import { WalletTransactionEntity } from './wallet-transaction.entity';
+import { WalletTransactionHistory } from './wallet_transaction_history.entity';
 
 @Entity({ name: 'wallet' })
 @Unique(['userId', 'currency'])
@@ -38,16 +38,18 @@ export class WalletEntity {
   currency: string; // ISO 4217 currency code
 
   // One-to-Many relations
+  ////////////////////////////////////////////////////////////////////
 
-  @OneToMany(() => UserAuthSessionEntity, (e) => e.user)
+  @OneToMany(() => WalletTransactionEntity, (e) => e.wallet)
   @JoinColumn()
-  authSessions: UserAuthSessionEntity[];
+  transactions: WalletTransactionEntity[];
 
-  @OneToMany(() => TradingAccountEntity, (e) => e.user)
+  @OneToMany(() => WalletTransactionHistory, (e) => e.wallet)
   @JoinColumn()
-  tradingAccounts: TradingAccountEntity[];
+  transactionHistory: WalletTransactionHistory[];
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.wallets, {
     onUpdate: 'CASCADE',

@@ -29,6 +29,7 @@ export class UserAuthSessionEntity {
   userAgent?: string | null;
 
   // Many-to-One relations
+  ////////////////////////////////////////////////////////////////////
 
   @ManyToOne(() => CompanyEntity, (e) => e.userAuthSessions, {
     onUpdate: 'CASCADE',

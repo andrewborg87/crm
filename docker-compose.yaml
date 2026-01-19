@@ -41,6 +41,27 @@ services:
     volumes:
       - ./apps/analytics:/app/apps/analytics
   ############################
+  broker:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/broker
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=broker
+    ports:
+      - '3001:3000'
+      - '30001:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/broker:/app/apps/broker
+      - ./packages:/app/packages
+  ############################
   docs:
     profiles: [ 'dev' ]
     build:
@@ -67,27 +88,6 @@ services:
       - '3000:3000'
     volumes:
       - ./apps/frontend:/app/apps/frontend
-  ############################
-  sample:
-    profiles: [ 'dev' ]
-    <<: *nest_service
-    working_dir: /app/apps/sample
-    command: nest start --watch --debug 0.0.0.0:9229
-    build:
-      target: 'development'
-      args:
-        - TARGET_APP=sample
-    ports:
-      - '3001:3000'
-      - '30001:9229'
-    depends_on:
-      - postgres
-      - redis
-      - kafka
-      - gateway
-    volumes:
-      - ./apps/sample:/app/apps/sample
-      - ./packages:/app/packages
 
   ## Infrastructure Containers            ##
   ##########################################
@@ -168,6 +168,8 @@ services:
       - '1080:1080'
   ############################
 
+  ## Utils Containers                     ##
+  ##########################################
   utils:
     profiles: ['tools']
     build:

@@ -6,9 +6,9 @@ FROM cubejs/cube:v1.0.13 AS production
 WORKDIR /cube/conf
 
 # Copy the required files
-COPY ./apps/cube/model ./model
-COPY ./apps/cube/cube.js ./cube.js
-COPY ./apps/cube/package.json ./package.json
+COPY ./apps/analytics/model ./model
+COPY ./apps/analytics/cube.js ./cube.js
+COPY ./apps/analytics/package.json ./package.json
 
 # Install dependencies
 RUN npm i
