@@ -1,0 +1,42 @@
+{
+  "name": "@crm/auth",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/jwt": "11.0.1",
+    "@nestjs/passport": "11.0.5",
+    "@crm/database": "workspace:^",
+    "@crm/types": "workspace:^",
+    "passport": "0.7.0",
+    "passport-anonymous": "1.0.1",
+    "passport-jwt": "4.0.1"
+  },
+  "peerDependencies": {
+    "@nestjs/core": "*",
+    "@nestjs/common": "*",
+    "@nestjs/config": "*",
+    "@nestjs/platform-express": "*",
+    "@nestjs/swagger": "*",
+    "@nestjs/typeorm": "*",
+    "class-transformer": "*",
+    "class-validator": "*",
+    "typeorm": "*"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/passport-anonymous": "1.0.5",
+    "@types/passport-jwt": "4.0.1"
+  }
+}

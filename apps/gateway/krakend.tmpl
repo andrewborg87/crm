@@ -1,0 +1,135 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "KrakenD Gateway",
+  "port": {{ env "PORT" }},
+  "extra_config": {
+    "telemetry/logging": {
+      "level": "INFO",
+      "format": "logstash",
+      "syslog": false,
+      "stdout": true
+    },
+    "security/cors": {
+      "allow_origins": ["localhost:3000", "localhost:8080"],
+      "allow_headers": [
+        "Accept",
+        "Authorization",
+        "Accept-Language",
+        "Accept-Encoding",
+        "Access-Control-Request-Headers",
+        "Access-Control-Request-Method",
+        "Origin",
+        "Content-Type",
+        "Cache-Control",
+        "Pragma",
+        "Host",
+        "User-Agent",
+        "Connection",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site"
+      ],
+      "allow_credentials": true,
+      "allow_methods": ["GET", "OPTIONS", "POST", "DELETE", "PUT", "PATCH"],
+      "expose_headers": ["*"],
+      "max_age": "12h",
+      "debug": true
+    },
+    "router": {
+      "return_error_msg": true,
+      "forwarded_by_client_ip": true,
+      "disable_path_decoding": true,
+      "trusted_proxies": [
+        "10.0.0.0/8",  {{/* Private IP range */}}
+        "172.16.0.0/12",
+        "103.21.244.0/22",  {{/* Cloudflare */}}
+        "103.22.200.0/22",
+        "103.31.4.0/22",
+        "104.16.0.0/13",
+        "104.24.0.0/14",
+        "108.162.192.0/18",
+        "131.0.72.0/22",
+        "141.101.64.0/18",
+        "162.158.0.0/15",
+        "172.64.0.0/13",
+        "173.245.48.0/20",
+        "188.114.96.0/20",
+        "190.93.240.0/20",
+        "197.234.240.0/22",
+        "198.41.128.0/17",
+        "2400:cb00::/32",
+        "2606:4700::/32",
+        "2803:f800::/32",
+        "2405:b500::/32",
+        "2405:8100::/32",
+        "2a06:98c0::/29",
+        "2c0f:f248::/32"
+      ]
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/health",
+      "extra_config": {
+        "proxy": {
+          "static": {
+            "data": { "custom": "pong" },
+            "strategy": "always"
+          }
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/__health",
+          "host": ["http://localhost:8080"]
+        }
+      ]
+    },
+    {{- range $idx, $endpoint := .sample.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }}
+  ]
+}
+
+{{- define "service_def" }}
+  {
+    "endpoint": "{{ .endpoint }}",
+    "method": "{{ .method }}",
+    "output_encoding": "{{ default "json" .output_encoding }}",
+    "timeout": "180s",
+    "input_query_strings": ["*"],
+    "input_headers": ["*"],
+    "output_headers": ["*"],
+    {{ if hasKey . "extra_config" }}"extra_config": {{ toPrettyJson .extra_config }},{{ end }}
+    {{- if hasKey . "cache_ttl" }}
+    "cache_ttl": "{{ .cache_ttl }}",
+    {{ end }}
+    {{- if hasKey . "timeout" }}
+    "timeout": "{{ .timeout }}",
+    {{ end }}
+    {{- if hasKey . "concurrent_calls" }}
+    "concurrent_calls": {{ .concurrent_calls }},
+    {{ end }}
+    "backend": [
+      {{- range $qidx, $backend := .backend }}{{- if $qidx }},{{- end }}
+      {
+        "url_pattern": "{{ $backend.url_pattern }}",
+        "method": "{{ $backend.method }}",
+        "encoding": "{{ default "json" .encoding }}",
+        "host": {{ $backend.host | marshal }},
+        {{- if hasKey $backend "allow" }}
+          "allow": "{{ .allow }}",
+        {{ end }}
+        {{- if hasKey $backend "group" }}
+          "group": "{{ .group }}",
+        {{ end }}
+        {{- if hasKey $backend "is_collection" }}
+          "is_collection": {{ .is_collection }},
+        {{ end }}
+        "extra_config": {{ merge $backend.extra_config (dict "backend/http" (dict "return_error_code" true)) | toJson }},
+        "disable_host_sanitize": true
+      }
+      {{- end }}
+    ]
+  }
+{{- end }}

@@ -1,0 +1,81 @@
+[
+  {
+    "name": "sample",
+    "image": "${image_uri}",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 3000,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "NODE_ENV",
+        "value": "production"
+      },
+      {
+        "name": "APP_NAME",
+        "value": "sample"
+      },
+      {
+        "name": "ENCRYPTION_ALGORITHM",
+        "value": "aes-256-cbc"
+      },
+      {
+        "name": "DATABASE_HOST",
+        "value": "<sample>"
+      },
+      {
+        "name": "DATABASE_PORT",
+        "value": "5432"
+      },
+      {
+        "name": "REDIS_HOST",
+        "value": "<sample>"
+      },
+      {
+        "name": "REDIS_PORT",
+        "value": "6379"
+      },
+      {
+        "name": "KAFKA_BROKERS",
+        "value": "<sample>"
+      },
+      {
+        "name": "KAFKAJS_NO_PARTITIONER_WARNING",
+        "value": "1"
+      }
+    ],
+    "secrets": [
+      {
+        "name": "DATABASE_USERNAME",
+        "valueFrom": "${secrets_manager_arn}:DATABASE_USERNAME::"
+      },
+      {
+        "name": "DATABASE_PASSWORD",
+        "valueFrom": "${secrets_manager_arn}:DATABASE_PASSWORD::"
+      },
+      {
+        "name": "DATABASE_NAME",
+        "valueFrom": "${secrets_manager_arn}:DATABASE_NAME::"
+      },
+      {
+        "name": "SENTRY_DSN",
+        "valueFrom": "${secrets_manager_arn}:SENTRY_DSN::"
+      },
+      {
+        "name": "ENCRYPTION_KEY",
+        "valueFrom": "${secrets_manager_arn}:ENCRYPTION_KEY::"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-region": "${aws_region}",
+        "awslogs-group": "${logs_group}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]

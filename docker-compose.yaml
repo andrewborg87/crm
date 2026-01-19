@@ -1,0 +1,186 @@
+x-nest-service: &nest_service
+  stop_grace_period: 1s
+  build:
+    target: 'development'
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 4Gb
+      reservations:
+        cpus: '1'
+        memory: 2GB
+
+x-next-service: &next_service
+  stop_grace_period: 1s
+  build:
+    target: 'development'
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2Gb
+      reservations:
+        cpus: '1'
+        memory: 1GB
+
+services:
+  ## Microservices                        ##
+  ##########################################
+  analytics:
+    profiles: [ 'dev' ]
+    image: 'cubejs/cube:v1.0.13'
+    working_dir: /app/apps/analytics
+    platform: linux/amd64
+    ports:
+      - '4000:4000'
+    depends_on:
+      - postgres
+    env_file:
+      - './apps/analytics/.env'
+    volumes:
+      - ./apps/analytics:/app/apps/analytics
+  ############################
+  docs:
+    profiles: [ 'dev' ]
+    build:
+      dockerfile: ./apps/docs/Dockerfile
+      target: 'docs'
+    working_dir: /app/apps/docs
+    command: pnpm dev
+    ports:
+      - '5001:3000'
+    volumes:
+      - ./apps/docs:/app/apps/docs
+      - ./packages:/app/packages
+  ############################
+  frontend:
+    profiles: [ 'dev' ]
+    <<: *next_service
+    working_dir: /app/apps/frontend
+    command: pnpm dev
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/frontend:/app/apps/frontend
+  ############################
+  sample:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/sample
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=sample
+    ports:
+      - '3001:3000'
+      - '30001:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/sample:/app/apps/sample
+      - ./packages:/app/packages
+
+  ## Infrastructure Containers            ##
+  ##########################################
+  postgres:
+    profiles: [ 'dev', 'tools' ]
+    image: postgres:17.0-alpine
+    ports:
+      - '5432:5432'
+    volumes:
+      - crm-postgres-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: crm
+  ############################
+  redis:
+    profiles: [ 'dev' ]
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+  ############################
+  kafka:
+    profiles: [ 'dev' ]
+    image: bitnamilegacy/kafka:3.5.1
+    healthcheck:
+      test: [ 'CMD-SHELL', 'exit 0' ]
+      interval: 1s
+      timeout: 5s
+      retries: 500
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+    depends_on:
+      - zookeeper
+      - ui-kafka
+  ############################
+  gateway:
+    profiles: ['dev']
+    image: devopsfaith/krakend:2.9.2-watch
+    stop_grace_period: 1s
+    volumes:
+      - ./apps/gateway:/etc/krakend
+    ports:
+      - '8080:8080'
+      - '9090:9090'
+    environment:
+      - FC_ENABLE=1
+      - FC_SETTINGS=/etc/krakend/config/services
+      - FC_PARTIALS=/etc/krakend/config/partials
+      - FC_OUT=krakend.json
+      - PORT=8080
+    command: ['run', '-dc', '/etc/krakend/krakend.tmpl']
+  ############################
+  zookeeper:
+    profiles: [ 'dev' ]
+    image: bitnamilegacy/zookeeper:3.9.0
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - '2181:2181'
+  ############################
+  ui-kafka:
+    profiles: [ 'dev' ]
+    image: provectuslabs/kafka-ui:latest
+    environment:
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    ports:
+      - '9080:8080'
+  ############################
+  maildev:
+    profiles: [ 'dev' ]
+    image: maildev/maildev:latest
+    ports:
+      - '1025:1025'
+      - '1080:1080'
+  ############################
+
+  utils:
+    profiles: ['tools']
+    build:
+      target: 'base'
+    command: 'echo ''Specify your command like "pnpm db:migrate:up" in the docker-compose command'''
+    volumes:
+      - ./:/app
+    depends_on:
+      - postgres
+
+volumes:
+  crm-postgres-db:
+
+networks:
+  crm-network:
+    driver: bridge

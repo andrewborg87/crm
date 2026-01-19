@@ -1,0 +1,17 @@
+{
+  "name": "@crm/types",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\""
+  }
+}

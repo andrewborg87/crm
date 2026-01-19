@@ -1,0 +1,35 @@
+{
+  "name": "@crm/database",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\"",
+    "db:migrate:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource=src/data-source.ts migration:generate src/migrations/sql",
+    "db:migrate:up": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource=src/data-source.ts migration:run",
+    "db:migrate:down": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource=src/data-source.ts migration:revert",
+    "db:seed": "ts-node -r tsconfig-paths/register ./src/seeds/run-seed.ts"
+  },
+  "dependencies": {
+    "@crm/types": "workspace:^",
+    "@crm/utils": "workspace:^",
+    "pg": "8.16.3",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependencies": {
+    "@nestjs/core": "*",
+    "@nestjs/common": "*",
+    "@nestjs/config": "*",
+    "@nestjs/typeorm": "*",
+    "class-transformer": "*",
+    "typeorm": "*"
+  }
+}

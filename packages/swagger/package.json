@@ -1,0 +1,29 @@
+{
+  "name": "@crm/swagger",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@crm/types": "workspace:*",
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "@nestjs/core": "*",
+    "@nestjs/common": "*",
+    "@nestjs/swagger": "*"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.21"
+  }
+}

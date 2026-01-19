@@ -1,0 +1,173 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: ['main'] # Trigger only on pushes to the main branch
+  workflow_dispatch:
+    inputs:
+      force_deploy_all:
+        description: 'Force deploy all apps (ignore change detection)'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_analytics:
+        description: 'Force deploy CubeJS (analytics)'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_gateway:
+        description: 'Force deploy Gateway (KrakenD)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  changed-files:
+    name: Changed Files Detection
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ (inputs.force_deploy_all == true || inputs.force_deploy_gateway == true) && 'true' || steps.filter.outputs.gateway }}
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        if: |
+          inputs.force_deploy_all != true &&
+          inputs.force_deploy_analytics != true &&
+          inputs.force_deploy_gateway != true
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      # Detect which apps have changes
+      - name: Detect changed apps
+        if: |
+          inputs.force_deploy_all != true &&
+          inputs.force_deploy_analytics != true &&
+          inputs.force_deploy_gateway != true
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.event.before || 'HEAD~1' }}
+          filters: |
+            analytics:
+              - 'apps/analytics/**'
+            gateway:
+              - 'apps/gateway/**'
+
+  build-analytics:
+    name: Build & Deploy CubeJS (analytics)
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.analytics == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_analytics == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=${{ vars.CLUSTER_NAME }}" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=${{ vars.CLUSTER_NAME }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build Image
+        run: docker build --file ./apps/analytics/Dockerfile --platform linux/amd64 --target production -t analytics .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/analytics"
+
+          docker tag analytics:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag analytics:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.CLUSTER_NAME }} \
+            --service analytics \
+            --force-new-deployment
+          echo "CubeJS (analytics) deployment to ${{ env.ENVIRONMENT }} triggered!"
+
+  build-gateway:
+    name: Build & Deploy Gateway (KrakenD)
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.gateway == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_gateway == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=${{ vars.CLUSTER_NAME }}" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+            echo "CLUSTER_NAME=${{ vars.CLUSTER_NAME }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build Image
+        run: docker build --file ./apps/gateway/Dockerfile --target production -t gateway .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/gateway"
+
+          docker tag gateway:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag gateway:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.CLUSTER_NAME }} \
+            --service gateway \
+            --force-new-deployment
+          echo "Gateway (KrakenD) deployment to ${{ env.ENVIRONMENT }} triggered!"

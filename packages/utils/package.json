@@ -1,0 +1,27 @@
+{
+  "name": "@crm/utils",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/terminus": "^11.0.0",
+    "crypto": "^1.0.1"
+  },
+  "peerDependencies": {
+    "@nestjs/core": "*",
+    "@nestjs/common": "*",
+    "class-transformer": "*",
+    "class-validator": "*"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "endpoints": [
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/docs-json",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/sample/docs-json"
+    },
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/docs/{any}",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/sample/docs/{any}",
+      "output_encoding": "no-op"
+    },
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/docs",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/sample/docs",
+      "output_encoding": "no-op"
+    },
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/api/health/prometheus",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/api/health/prometheus",
+      "output_encoding": "no-op"
+    },
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/api/health",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/api/health",
+      "output_encoding": "no-op"
+    },
+    {
+      "backend": [
+        {
+          "method": "GET",
+          "url_pattern": "/api/health/ping",
+          "host": [
+            "http://sample:3000"
+          ]
+        }
+      ],
+      "method": "GET",
+      "endpoint": "/api/health/ping",
+      "output_encoding": "no-op"
+    }
+  ]
+}
