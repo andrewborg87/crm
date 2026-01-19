@@ -27,6 +27,7 @@ export class WalletEntity {
   @Column({ type: 'text' })
   friendlyName?: string | null;
 
+  @Index()
   @Column({ type: 'enum', enum: AssetType })
   assetType: AssetType;
 

@@ -2,6 +2,7 @@ import {
   Index,
   Entity,
   Column,
+  Unique,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
@@ -17,15 +18,21 @@ import { CompanyEntity } from './company.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
 
 @Entity({ name: 'wallet_transaction_history' })
+@Unique(['walletTransactionId', 'occurredAt'])
 export class WalletTransactionHistoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ type: 'enum', enum: TransactionStatus })
   status: TransactionStatus;
 
   @Column({ type: 'text', nullable: true })
   comment?: string | null;
+
+  @Index()
+  @Column({ type: 'timestamp' })
+  occurredAt: Date;
 
   // Many-to-One relations
   ////////////////////////////////////////////////////////////////////

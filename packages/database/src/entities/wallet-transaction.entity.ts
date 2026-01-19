@@ -2,6 +2,7 @@ import {
   Index,
   Entity,
   Column,
+  Unique,
   ManyToOne,
   OneToMany,
   JoinColumn,
@@ -19,13 +20,19 @@ import { TradingAccountEntity } from './trading-account.entity';
 import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'wallet_transaction' })
+@Unique(['externalId'])
 export class WalletTransactionEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'text' })
+  externalId?: string | null;
+
+  @Index()
   @Column({ type: 'enum', enum: WalletTransactionType })
   type: WalletTransactionType;
 
+  @Index()
   @Column({ type: 'enum', enum: TransactionStatus })
   status: TransactionStatus;
 
