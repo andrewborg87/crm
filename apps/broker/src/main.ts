@@ -4,9 +4,9 @@ import { useContainer } from 'class-validator';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { Transport, KafkaOptions } from '@nestjs/microservices';
 
-import { HttpExceptionFilter } from '@project/http';
-import { EcsLogger, RestLogInterceptor } from '@project/logger';
-import { SwaggerModule, SwaggerService } from '@project/swagger';
+import { HttpExceptionFilter } from '@crm/http';
+import { EcsLogger, RestLogInterceptor } from '@crm/logger';
+import { SwaggerModule, SwaggerService } from '@crm/swagger';
 
 import { AppModule } from './app.module';
 import { AppConfig } from './config/app/app-config.type';

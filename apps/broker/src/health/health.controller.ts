@@ -4,7 +4,7 @@ import { HealthCheck } from '@nestjs/terminus';
 import { HealthCheckResult } from '@nestjs/terminus';
 import { Get, Res, Header, Controller } from '@nestjs/common';
 
-import { PrometheusAdapter } from '@project/utils';
+import { PrometheusAdapter } from '@crm/utils';
 
 import { HealthCheckProvider } from './providers';
 
