@@ -14,25 +14,32 @@ import {
 
 import { CompanyType } from '@crm/types';
 
+import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 import { AlertEntity } from './alert.entity';
 import { ServerEntity } from './server.entity';
 import { ChannelEntity } from './channel.entity';
 import { AuditLogEntity } from './audit-log.entity';
+import { UserNoteEntity } from './user-note.entity';
 import { UserDetailEntity } from './user-detail.entity';
 import { UserAvatarEntity } from './user-avatar.entity';
 import { IntegrationEntity } from './integration.entity';
 import { BillingInfoEntity } from './billing-info.entity';
+import { UserSettingEntity } from './user-setting.entity';
 import { OrganisationEntity } from './organisation.entity';
+import { UserDocumentEntity } from './user-document.entity';
 import { TenantCompanyEntity } from './tenant-company.entity';
 import { UserNotification } from './user-notification.entity';
 import { CompanySettingEntity } from './company-setting.entity';
+import { PlatformClientEntity } from './platform-client.entity';
+import { TradingAccountEntity } from './trading-account.entity';
 import { UserAuthSessionEntity } from './user-auth-session.entity';
 import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
 import { TradingAccountTypeEntity } from './trading-account-type.entity';
 import { TradingAccountTypeLeverageEntity } from './trading-account-type-leverage.entity';
 
 @Entity({ name: 'company' })
+@Unique(['billingInfoId'])
 @Unique(['domain'])
 @Unique(['name', 'type'])
 export class CompanyEntity {
@@ -77,6 +84,10 @@ export class CompanyEntity {
   @JoinColumn()
   integrations: IntegrationEntity[];
 
+  @OneToMany(() => PlatformClientEntity, (e) => e.company)
+  @JoinColumn()
+  platformClients: PlatformClientEntity[];
+
   @OneToMany(() => ServerEntity, (e) => e.company)
   @JoinColumn()
   servers: ServerEntity[];
@@ -85,6 +96,10 @@ export class CompanyEntity {
   @JoinColumn()
   settings: CompanySettingEntity[];
 
+  @OneToMany(() => TagEntity, (e) => e.company)
+  @JoinColumn()
+  tags: TagEntity[];
+
   @OneToMany(() => TenantAuthSessionEntity, (e) => e.company)
   @JoinColumn()
   tenantAuthSessions: TenantAuthSessionEntity[];
@@ -92,6 +107,10 @@ export class CompanyEntity {
   @OneToMany(() => TenantCompanyEntity, (e) => e.company)
   @JoinColumn()
   tenantCompanies: TenantCompanyEntity[];
+
+  @OneToMany(() => TradingAccountEntity, (e) => e.company)
+  @JoinColumn()
+  tradingAccounts: TradingAccountEntity[];
 
   @OneToMany(() => TradingAccountTypeEntity, (e) => e.company)
   @JoinColumn()
@@ -117,9 +136,21 @@ export class CompanyEntity {
   @JoinColumn()
   userDetails: UserDetailEntity[];
 
+  @OneToMany(() => UserDocumentEntity, (e) => e.company)
+  @JoinColumn()
+  userDocuments: UserDocumentEntity[];
+
   @OneToMany(() => UserNotification, (e) => e.company)
   @JoinColumn()
   userNotifications: UserNotification[];
+
+  @OneToMany(() => UserNoteEntity, (e) => e.company)
+  @JoinColumn()
+  userNotes: UserNoteEntity[];
+
+  @OneToMany(() => UserSettingEntity, (e) => e.company)
+  @JoinColumn()
+  userSettings: UserSettingEntity[];
 
   /** Many-to-one relations */
   @ManyToOne(() => OrganisationEntity, (e) => e.companies, {

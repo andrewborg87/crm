@@ -14,6 +14,7 @@ import {
 import { Platform, Monetization } from '@crm/types';
 
 import { CompanyEntity } from './company.entity';
+import { TradingAccountEntity } from './trading-account.entity';
 import { TradingAccountTypeEntity } from './trading-account-type.entity';
 
 @Entity({ name: 'organisation' })
@@ -40,11 +41,15 @@ export class ServerEntity {
   settings: Record<string, any>;
 
   /** One-to-many relations */
+  @OneToMany(() => TradingAccountEntity, (e) => e.server)
+  @JoinColumn()
+  tradingAccounts: TradingAccountEntity[];
+
   @OneToMany(() => TradingAccountTypeEntity, (e) => e.server)
   @JoinColumn()
   tradingAccountTypes: TradingAccountTypeEntity[];
 
-  /** Many-to-many relations */
+  /** Many-to-one relations */
   @ManyToOne(() => CompanyEntity, (e) => e.servers, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',

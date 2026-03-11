@@ -72,6 +72,7 @@ export class AuditLogEntity {
   @ManyToOne(() => TenantEntity, (e) => e.auditLogs, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'tenantId' })
   tenant?: TenantEntity | null;

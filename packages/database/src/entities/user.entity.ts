@@ -15,12 +15,18 @@ import {
 import { UserStatus } from '@crm/types';
 
 import { CompanyEntity } from './company.entity';
+import { UserNoteEntity } from './user-note.entity';
 import { UserAvatarEntity } from './user-avatar.entity';
 import { UserDetailEntity } from './user-detail.entity';
+import { UserSettingEntity } from './user-setting.entity';
+import { UserDocumentEntity } from './user-document.entity';
 import { UserNotification } from './user-notification.entity';
+import { TradingAccountEntity } from './trading-account.entity';
 import { UserAuthSessionEntity } from './user-auth-session.entity';
 
 @Entity({ name: 'user' })
+@Unique(['detailId'])
+@Unique(['settingsId'])
 @Unique(['email', 'companyId'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -73,6 +79,7 @@ export class UserEntity {
   @OneToOne(() => UserAvatarEntity, (e) => e.user, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'avatarId' })
   avatar?: UserAvatarEntity | null;
@@ -84,6 +91,7 @@ export class UserEntity {
   @OneToOne(() => UserDetailEntity, (e) => e.user, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'userDetailId' })
   detail?: UserDetailEntity | null;
@@ -92,14 +100,37 @@ export class UserEntity {
   @Column({ type: 'text', nullable: true })
   detailId?: string | null;
 
+  @OneToOne(() => UserSettingEntity, (e) => e.user, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'settingsId' })
+  settings: UserSettingEntity;
+
+  @Index()
+  @Column({ type: 'text' })
+  settingsId: string;
+
   /** One-to-many relations */
   @OneToMany(() => UserAuthSessionEntity, (e) => e.user)
   @JoinColumn()
   authSessions: UserAuthSessionEntity[];
 
+  @OneToMany(() => UserDocumentEntity, (e) => e.user)
+  @JoinColumn()
+  documents: UserDocumentEntity[];
+
+  @OneToMany(() => UserNoteEntity, (e) => e.user)
+  @JoinColumn()
+  notes: UserNoteEntity[];
+
   @OneToMany(() => UserNotification, (e) => e.user)
   @JoinColumn()
   notifications: UserNotification[];
+
+  @OneToMany(() => TradingAccountEntity, (e) => e.user)
+  @JoinColumn()
+  tradingAccounts: TradingAccountEntity[];
 
   /** Many-to-one relations */
   @ManyToOne(() => CompanyEntity, (e) => e.users, {

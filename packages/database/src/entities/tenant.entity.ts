@@ -14,9 +14,11 @@ import {
 import { TenantStatus } from '@crm/types';
 
 import { AuditLogEntity } from './audit-log.entity';
+import { UserNoteEntity } from './user-note.entity';
 import { OrganisationEntity } from './organisation.entity';
 import { TenantCompanyEntity } from './tenant-company.entity';
 import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
+import { TradingAccountTagEntity } from './trading-account-tag.entity';
 
 @Entity({ name: 'tenant' })
 @Unique(['organisationId', 'email'])
@@ -56,6 +58,14 @@ export class TenantEntity {
   @OneToMany(() => TenantCompanyEntity, (e) => e.tenant)
   @JoinColumn()
   tenantCompanies: TenantCompanyEntity[];
+
+  @OneToMany(() => TradingAccountTagEntity, (e) => e.taggedByTenant)
+  @JoinColumn()
+  tradingAccountTags: TradingAccountTagEntity[];
+
+  @OneToMany(() => UserNoteEntity, (e) => e.author)
+  @JoinColumn()
+  userNotes: UserNoteEntity[];
 
   /** Many-to-one relations */
   @ManyToOne(() => OrganisationEntity, (e) => e.tenants, {

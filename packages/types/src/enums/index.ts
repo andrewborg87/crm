@@ -12,12 +12,16 @@ export * from './auth/role.enum';
 
 export * from './common/channel.enum';
 export * from './common/company-type.enum';
+export * from './common/document-status.enum';
+export * from './common/document-type.enum';
 export * from './common/integration.enum';
 export * from './common/integration-type.enum';
 export * from './common/sort-dir.enum';
 
 export * from './platform/monetization.enum';
 export * from './platform/platform.enum';
+export * from './platform/platform-client-type.enum';
+export * from './platform/trading-account-status.enum';
 
 export * from './tenant/tenant-status.enum';
 
