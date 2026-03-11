@@ -87,7 +87,11 @@
         }
       ]
     },
-    {{- range $idx, $endpoint := .sample.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }}
+    {{- range $idx, $endpoint := .broker.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }},
+    {{- range $idx, $endpoint := .compliance.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }},
+    {{- range $idx, $endpoint := .payment.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }},
+    {{- range $idx, $endpoint := .prop.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }},
+    {{- range $idx, $endpoint := .user.endpoints }}{{if $idx}},{{end}}{{ template "service_def" $endpoint }}{{ end }}
   ]
 }
 

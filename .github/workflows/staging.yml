@@ -1,0 +1,514 @@
+name: Staging Deploy
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore:
+      - CHANGELOG.md
+      - .release-please-manifest.json
+
+  workflow_dispatch:
+    inputs:
+      force_deploy_all:
+        description: 'Force deploy all apps (ignore change detection)'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_analytics:
+        description: 'Force deploy CubeJS (analytics)'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_broker:
+        description: 'Force deploy Broker'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_bull_monitor:
+        description: 'Force deploy Bull Monitor'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_compliance:
+        description: 'Force deploy Compliance'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_gateway:
+        description: 'Force deploy Gateway (KrakenD)'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_payment:
+        description: 'Force deploy Payment'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_prop:
+        description: 'Force deploy Prop'
+        required: false
+        type: boolean
+        default: false
+      force_deploy_user:
+        description: 'Force deploy User'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  changed-files:
+    name: Changed Files Detection
+    runs-on: ubuntu-latest
+    outputs:
+      analytics: ${{ steps.filter.outputs.analytics }}
+      broker: ${{ steps.filter.outputs.broker }}
+      bull_monitor: ${{ steps.filter.outputs.bull_monitor }}
+      compliance: ${{ steps.filter.outputs.compliance }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      payment: ${{ steps.filter.outputs.payment }}
+      prop: ${{ steps.filter.outputs.prop }}
+      user: ${{ steps.filter.outputs.user }}
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      # Detect which apps have changes
+      - name: Detect changed apps
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.event_name == 'push' && github.event.before || 'HEAD~1' }}
+          filters: |
+            analytics:
+              - 'apps/analytics/**'
+            broker:
+              - 'apps/broker/**'
+              - 'packages/**'
+              - 'Dockerfile'
+            bull_monitor:
+              - 'apps/bull-monitor/**'
+            compliance:
+              - 'apps/compliance/**'
+              - 'packages/**'
+              - 'Dockerfile'
+            gateway:
+              - 'apps/gateway/**'
+            payment:
+              - 'apps/payment/**'
+              - 'packages/**'
+              - 'Dockerfile'
+            prop:
+              - 'apps/prop/**'
+              - 'packages/**'
+              - 'Dockerfile'
+            user:
+              - 'apps/user/**'
+              - 'packages/**'
+              - 'Dockerfile'
+
+      - name: Summary
+        run: |
+          echo "Changed apps:"
+          echo "  Analytics: ${{ steps.filter.outputs.analytics }}"
+          echo "  Broker: ${{ steps.filter.outputs.broker }}"
+          echo "  Bull Monitor: ${{ steps.filter.outputs.bull_monitor }}"
+          echo "  Gateway: ${{ steps.filter.outputs.gateway }}"
+          echo "  Payment: ${{ steps.filter.outputs.payment }}"
+          echo "  Prop: ${{ steps.filter.outputs.prop }}"
+          echo "  User: ${{ steps.filter.outputs.user }}"
+
+  build-analytics:
+    name: Build Analytics
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.analytics == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_analytics == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --file ./apps/analytics/Dockerfile --platform linux/amd64 --target production -t analytics .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-analytics"
+
+          docker tag analytics:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag analytics:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service analytics \
+            --force-new-deployment
+          echo "Analytics deployment to Staging triggered!"
+
+
+  build-broker:
+    name: Build Broker
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.broker == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_broker == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --platform linux/amd64 --build-arg TARGET_APP=broker --target production -t broker .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-broker"
+
+          docker tag broker:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag broker:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service broker \
+            --force-new-deployment
+          echo "Broker deployment to Staging triggered!"
+
+  build-bull-monitor:
+    name: Build Bull Monitor
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.bull_monitor == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_bull_monitor == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --target production --build-arg TARGET_APP=bull-monitor -t bull-monitor .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-bull-monitor"
+
+          docker tag bull-monitor:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag bull-monitor:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service bull-monitor \
+            --force-new-deployment
+          echo "Bull Monitor deployment to Staging triggered!"
+
+  build-compliance:
+    name: Build Compliance
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.compliance == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_compliance == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --platform linux/amd64 --build-arg TARGET_APP=compliance --target production -t compliance .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-compliance"
+
+          docker tag compliance:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag compliance:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service compliance \
+            --force-new-deployment
+          echo "Compliance deployment to Staging triggered!"
+
+  build-gateway:
+    name: Build Gateway
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.gateway == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_gateway == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --file ./apps/gateway/Dockerfile --target production -t gateway .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-gateway"
+
+          docker tag gateway:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag gateway:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service gateway \
+            --force-new-deployment
+          echo "Gateway deployment to Staging triggered!"
+
+  build-payment:
+    name: Build Payment
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.payment == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_payment == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --platform linux/amd64 --build-arg TARGET_APP=payment --target production -t payment .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-payment"
+
+          docker tag payment:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag payment:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service payment \
+            --force-new-deployment
+          echo "Payment deployment to Staging triggered!"
+
+  build-prop:
+    name: Build Prop
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.prop == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_prop == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --platform linux/amd64 --build-arg TARGET_APP=prop --target production -t prop .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-prop"
+
+          docker tag prop:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag prop:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service prop \
+            --force-new-deployment
+          echo "Prop deployment to Staging triggered!"
+
+  build-user:
+    name: Build User
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.user == 'true' || inputs.force_deploy_all == true || inputs.force_deploy_user == true
+
+    steps:
+      # Checkout from the repository branch
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for change detection
+
+      - name: Build Image
+        run: docker build --platform linux/amd64 --build-arg TARGET_APP=user --target production -t user .
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Tag & Push to ECR
+      - name: Tag and Push Image to ECR
+        run: |
+          GIT_SHA="$(echo $GITHUB_SHA | cut -c1-7)"
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-staging-user"
+
+          docker tag user:latest $URI:$GIT_SHA
+          docker push $URI:$GIT_SHA
+
+          docker tag user:latest $URI:latest
+          docker push $URI:latest
+
+      # Deploy to ECS
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-staging-cluster \
+            --service user \
+            --force-new-deployment
+          echo "User deployment to Staging triggered!"

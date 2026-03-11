@@ -62,6 +62,45 @@ services:
       - ./apps/broker:/app/apps/broker
       - ./packages:/app/packages
   ############################
+  bull-monitor:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/bull-monitor
+    command: nest start --watch
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=bull-monitor
+    ports:
+      - '3002:3000'
+    depends_on:
+      - redis
+      - gateway
+    volumes:
+      - ./apps/bull-monitor:/app/apps/bull-monitor
+      - ./packages:/app/packages
+  ############################
+  compliance:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/compliance
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=compliance
+    ports:
+      - '3003:3000'
+      - '30003:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/compliance:/app/apps/compliance
+      - ./packages:/app/packages
+  ############################
   docs:
     profiles: [ 'dev' ]
     build:
@@ -88,6 +127,69 @@ services:
       - '3000:3000'
     volumes:
       - ./apps/frontend:/app/apps/frontend
+  ############################
+  payment:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/payment
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=payment
+    ports:
+      - '3004:3000'
+      - '30004:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/payment:/app/apps/payment
+      - ./packages:/app/packages
+  ############################
+  prop:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/prop
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=prop
+    ports:
+      - '3005:3000'
+      - '30005:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/prop:/app/apps/prop
+      - ./packages:/app/packages
+  ############################
+  user:
+    profiles: [ 'dev' ]
+    <<: *nest_service
+    working_dir: /app/apps/user
+    command: nest start --watch --debug 0.0.0.0:9229
+    build:
+      target: 'development'
+      args:
+        - TARGET_APP=user
+    ports:
+      - '3006:3000'
+      - '30006:9229'
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - gateway
+    volumes:
+      - ./apps/user:/app/apps/user
+      - ./packages:/app/packages
 
   ## Infrastructure Containers            ##
   ##########################################
@@ -101,7 +203,7 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: crm
+      POSTGRES_DB: crm_db
   ############################
   redis:
     profiles: [ 'dev' ]
@@ -175,6 +277,8 @@ services:
     build:
       target: 'base'
     command: 'echo ''Specify your command like "pnpm db:migrate:up" in the docker-compose command'''
+    env_file:
+      - apps/sample/.env
     volumes:
       - ./:/app
     depends_on:

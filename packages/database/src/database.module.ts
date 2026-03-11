@@ -4,7 +4,7 @@ import { Type, Global, Module, Provider, DynamicModule, ModuleMetadata } from '@
 import { OptionalFactoryDependency } from '@nestjs/common/interfaces/modules/optional-factory-dependency.interface';
 
 import { UserEntity } from './entities/user.entity';
-import { UserAuthSessionEntity } from './entities/user-auth-session.entity';
+import { AuthSessionEntity } from './entities/auth-session.entity';
 
 export interface DatabaseModuleOptions {
   host: string;
@@ -78,7 +78,7 @@ export class DatabaseModule {
           }),
         }),
       ],
-      providers: [...providers, UserAuthSessionEntity, UserEntity],
+      providers: [...providers, AuthSessionEntity, UserEntity],
       exports: ['DB_CONFIG_OPTIONS'],
     };
   }

@@ -20,7 +20,11 @@ resource "aws_security_group" "private_sg" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    cidr_blocks     = ["0.0.0.0/0"]
+    cidr_blocks     = concat(
+      ["154.16.203.45/32"], # VPN IP Address
+      module.vpc.private_subnets_cidr_blocks,
+      module.vpc.public_subnets_cidr_blocks
+    )
   }
 
   ingress {
@@ -40,11 +44,27 @@ resource "aws_security_group" "private_sg" {
   }
 
   ingress {
-    description     = "Allow Backoffice HTTP"
-    from_port       = 8080
-    to_port         = 8080
+    description     = "Allow Kafka UI"
+    from_port       = 8090
+    to_port         = 8090
     protocol        = "tcp"
-    cidr_blocks     = ["0.0.0.0/0"]
+    cidr_blocks     = concat(
+      ["154.16.203.45/32"], # VPN IP Address
+      module.vpc.private_subnets_cidr_blocks,
+      module.vpc.public_subnets_cidr_blocks
+    )
+  }
+
+  ingress {
+    description     = "Allow Bull Monitor"
+    from_port       = 8091
+    to_port         = 8091
+    protocol        = "tcp"
+    cidr_blocks     = concat(
+      ["154.16.203.45/32"], # VPN IP Address
+      module.vpc.private_subnets_cidr_blocks,
+      module.vpc.public_subnets_cidr_blocks
+    )
   }
 
   egress {

@@ -1,0 +1,52 @@
+[
+  {
+    "name": "bull-monitor",
+    "image": "${image_uri}",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 3000,
+        "protocol": "tcp"
+      }
+    ],
+    "command": ["node", "/app/apps/bull_monitor/dist/main.js"],
+    "healthCheck": {
+      "command": ["CMD-SHELL", "curl -f http://localhost:3000/api/health/ping || exit 1"],
+      "interval": 30,
+      "timeout": 5,
+      "retries": 3,
+      "startPeriod": 30
+    },
+    "environment": [
+      {
+        "name": "NODE_ENV",
+        "value": "production"
+      },
+      {
+        "name": "PORT",
+        "value": "3000"
+      },
+      {
+        "name": "APP_NAME",
+        "value": "bull-monitor"
+      },
+      {
+        "name": "REDIS_HOST",
+        "value": "${redis_host}"
+      },
+      {
+        "name": "REDIS_PORT",
+        "value": "${redis_port}"
+      }
+    ],
+    "secrets": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-region": "${aws_region}",
+        "awslogs-group": "${logs_group}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]

@@ -1,0 +1,364 @@
+name: Production Deploy
+concurrency:
+  group: ${{ github.ref }}-prd
+  cancel-in-progress: false
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - CHANGELOG.md
+      - .release-please-manifest.json
+
+permissions:
+  contents: read
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    outputs:
+      is-release: ${{ steps.check.outputs.is-release }}
+      tag: ${{ steps.check.outputs.tag }}
+    steps:
+      - name: Check if Release Please PR
+        id: check
+        run: |
+          # Extract version from the latest commit message
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          if [[ "$COMMIT_MESSAGE" =~ chore\(main\):\ release\ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "is-release=true" >> $GITHUB_OUTPUT
+            echo "tag=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "✅ Release detected: ${BASH_REMATCH[1]}"
+          else
+            echo "is-release=false" >> $GITHUB_OUTPUT
+            echo "❌ Not a release commit"
+          fi
+
+  deploy-analytics:
+    name: Deploy Analytics
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-analytics"
+
+          docker build --file ./apps/analytics/Dockerfile --platform linux/amd64 --target production -t analytics .
+          
+          docker tag analytics:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag analytics:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service analytics \
+            --force-new-deployment
+          echo "Analytics deployment to Production triggered!"
+
+  deploy-broker:
+    name: Deploy Broker
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-broker"
+
+          docker build --target production --build-arg TARGET_APP=broker -t broker .
+          
+          docker tag broker:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag broker:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service broker \
+            --force-new-deployment
+          echo "Broker deployment to Production triggered!"
+
+  deploy-bull_monitor:
+    name: Deploy Bull Monitor
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-bull-monitor"
+
+          docker build --target production --build-arg TARGET_APP=bull-monitor -t bull-monitor .
+          
+          docker tag bull-monitor:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag bull-monitor:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service bull-monitor \
+            --force-new-deployment
+          echo "Bull Monitor deployment to Production triggered!"
+
+  deploy-compliance:
+    name: Deploy Compliance
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-compliance"
+
+          docker build --target production --build-arg TARGET_APP=compliance -t compliance .
+          
+          docker tag compliance:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag compliance:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service compliance \
+            --force-new-deployment
+          echo "Compliance deployment to Production triggered!"
+
+  deploy-gateway:
+    name: Deploy Gateway
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-gateway"
+
+          docker build --file ./apps/gateway/Dockerfile --target production -t gateway .
+          
+          docker tag gateway:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag gateway:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service gateway \
+            --force-new-deployment
+          echo "Gateway deployment to Production triggered!"
+
+
+  deploy-payment:
+    name: Deploy Payment
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-payment"
+
+          docker build --target production --build-arg TARGET_APP=payment -t payment .
+          
+          docker tag payment:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag payment:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service payment \
+            --force-new-deployment
+          echo "Payment deployment to Production triggered!"
+
+  deploy-prop:
+    name: Deploy Prop
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-prop"
+
+          docker build --target production --build-arg TARGET_APP=prop -t prop .
+          
+          docker tag prop:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag prop:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service prop \
+            --force-new-deployment
+          echo "Prop deployment to Production triggered!"
+
+  deploy-user:
+    name: Deploy User
+    needs: check-release
+    if: needs.check-release.outputs.is-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Tag
+        env:
+          IMAGE_TAG: ${{ needs.check-release.outputs.tag }}
+        run: |
+          URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/crm-user"
+
+          docker build --target production --build-arg TARGET_APP=user -t user .
+          
+          docker tag user:latest $URI:$IMAGE_TAG
+          docker push $URI:$IMAGE_TAG
+
+          docker tag user:latest $URI:latest
+          docker push $URI:latest
+
+      - name: Update ECS
+        run: |
+          aws ecs update-service \
+            --cluster crm-cluster \
+            --service user \
+            --force-new-deployment
+          echo "User deployment to Production triggered!"

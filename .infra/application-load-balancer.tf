@@ -21,8 +21,12 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.sample_tg.arn
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 
   tags = {
@@ -33,11 +37,13 @@ resource "aws_lb_listener" "http" {
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 443
-  protocol          = "HTTP"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn    = aws_acm_certificate_validation.crm_cert.certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.sample_tg.arn
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
 
   tags = {
@@ -45,14 +51,29 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-resource "aws_lb_listener" "sample" {
+resource "aws_lb_listener" "analytics" {
   load_balancer_arn = aws_lb.alb.arn
-  port              = 8080
+  port              = 4000
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.sample_tg.arn
+    target_group_arn = aws_lb_target_group.analytics_tg.arn
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_listener" "bull_monitor" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = 8091
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.bull_monitor_tg.arn
   }
 
   tags = {
@@ -63,15 +84,15 @@ resource "aws_lb_listener" "sample" {
 ## Target Groups
 ##################################################################
 
-resource "aws_lb_target_group" "sample_tg" {
-  name        = "crm-${local.env}-sample-tg"
-  port        = 3000
+resource "aws_lb_target_group" "analytics_tg" {
+  name        = "crm-${local.env}-analytics-tg"
+  port        = 4000
   protocol    = "HTTP"
   vpc_id      = module.vpc.vpc_id
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/readyz"
     interval            = 10
     timeout             = 5
     healthy_threshold   = 2
@@ -84,27 +105,213 @@ resource "aws_lb_target_group" "sample_tg" {
   }
 }
 
+resource "aws_lb_target_group" "broker_tg" {
+  name        = "crm-${local.env}-broker-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "bull_monitor_tg" {
+  name        = "crm-${local.env}-bull-monitor-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "compliance_tg" {
+  name        = "crm-${local.env}-compliance-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "frontend_tg" {
+  name        = "crm-${local.env}-frontend-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "gateway_tg" {
+  name        = "crm-${local.env}-gateway-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/__health"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200-399"
+  }
+}
+
+resource "aws_lb_target_group" "payment_tg" {
+  name        = "crm-${local.env}-payment-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "prop_tg" {
+  name        = "crm-${local.env}-prop-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_lb_target_group" "user_tg" {
+  name        = "crm-${local.env}-user-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = module.vpc.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/api/health/ping"
+    interval            = 10
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+## ALB Listener Rules
+##################################################################
+
+resource "aws_lb_listener_rule" "api_rule" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.gateway_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*"]
+    }
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
 ## Certificates
 ##################################################################
 
-# resource "aws_acm_certificate" "alb_cert" {
-#   domain_name       = local.environment_variables.domain
-#   validation_method = "DNS"
-#
-#   subject_alternative_names = [
-#     "*.${local.environment_variables.domain}"
-#   ]
-#
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-#
-#   tags = {
-#     project = "crm-${local.env}"
-#   }
-# }
-#
-# resource "aws_acm_certificate_validation" "alb_cert" {
-#   certificate_arn = aws_acm_certificate.alb_cert.arn
-# }
+resource "aws_acm_certificate" "crm_cert" {
+  domain_name       = local.environment_variables.domain
+  validation_method = "DNS"
 
+  subject_alternative_names = [
+    "*.${local.environment_variables.domain}"
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    project = "crm-${local.env}"
+  }
+}
+
+resource "aws_acm_certificate_validation" "crm_cert" {
+  certificate_arn = aws_acm_certificate.crm_cert.arn
+}
