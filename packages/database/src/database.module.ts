@@ -3,8 +3,8 @@ import { InjectionToken } from '@nestjs/common/interfaces/modules/injection-toke
 import { Type, Global, Module, Provider, DynamicModule, ModuleMetadata } from '@nestjs/common';
 import { OptionalFactoryDependency } from '@nestjs/common/interfaces/modules/optional-factory-dependency.interface';
 
-import { UserEntity } from './entities/user.entity';
-import { AuthSessionEntity } from './entities/auth-session.entity';
+import { AlertEntity } from './entities/alert.entity';
+import { TenantAuthSessionEntity } from './entities/tenant-auth-session.entity';
 
 export interface DatabaseModuleOptions {
   host: string;
@@ -78,7 +78,7 @@ export class DatabaseModule {
           }),
         }),
       ],
-      providers: [...providers, AuthSessionEntity, UserEntity],
+      providers: [...providers, TenantAuthSessionEntity, AlertEntity],
       exports: ['DB_CONFIG_OPTIONS'],
     };
   }

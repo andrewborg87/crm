@@ -1,0 +1,46 @@
+import {
+  Index,
+  Entity,
+  Column,
+  Unique,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+import { CompanyEntity } from './company.entity';
+
+@Entity({ name: 'company_setting' })
+@Unique(['key', 'companyId'])
+export class CompanySettingEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Index()
+  @Column({ type: 'text' })
+  key: string;
+
+  @Index()
+  @Column({ type: 'text' })
+  value: string;
+
+  /** Many-to-one relations */
+  @ManyToOne(() => CompanyEntity, (e) => e.settings, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'companyId' })
+  company: CompanyEntity;
+
+  @Index()
+  @Column({ type: 'text' })
+  companyId: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}

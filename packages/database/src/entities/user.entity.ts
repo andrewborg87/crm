@@ -3,6 +3,8 @@ import {
   Entity,
   Column,
   Unique,
+  OneToOne,
+  ManyToOne,
   OneToMany,
   JoinColumn,
   CreateDateColumn,
@@ -12,36 +14,104 @@ import {
 
 import { UserStatus } from '@crm/types';
 
-import { AuthSessionEntity } from './auth-session.entity';
+import { CompanyEntity } from './company.entity';
+import { UserAvatarEntity } from './user-avatar.entity';
+import { UserDetailEntity } from './user-detail.entity';
+import { UserNotification } from './user-notification.entity';
+import { UserAuthSessionEntity } from './user-auth-session.entity';
 
 @Entity({ name: 'user' })
-@Unique(['email'])
+@Unique(['email', 'companyId'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'text' })
+  firstName: string;
+
+  @Column({ type: 'text', nullable: true })
+  middleName?: string | null;
+
+  @Column({ type: 'text' })
+  lastName: string;
 
   @Index()
   @Column({ type: 'text' })
   email: string;
 
-  @Column({ type: 'text', nullable: true })
-  password?: string | null;
+  @Column({ type: 'text' })
+  passwordHash: string;
 
-  @Column({ type: 'bool', default: false })
-  isEmailConfirmed: boolean;
-
-  @Column({ type: String, nullable: true })
-  firstName?: string | null;
-
-  @Column({ type: String, nullable: true })
-  lastName?: string | null;
+  @Column({ type: 'varchar' })
+  securityPin: string;
 
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
-  @OneToMany(() => AuthSessionEntity, (e) => e.user)
+  @Column({ type: 'bool', default: false })
+  isEmailVerified: boolean;
+
+  @Column({ type: 'bool', default: false })
+  isTermsAccepted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  termsAcceptedAt?: Date | null;
+
+  @Column({ type: 'bool', default: false })
+  isPrivacyAccepted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  privacyAcceptedAt?: Date | null;
+
+  @Column({ type: 'bool', default: false })
+  isCookiesAccepted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  cookiesAcceptedAt?: Date | null;
+
+  /** One-to-one relations */
+  @OneToOne(() => UserAvatarEntity, (e) => e.user, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'avatarId' })
+  avatar?: UserAvatarEntity | null;
+
+  @Index()
+  @Column({ type: 'text', nullable: true })
+  avatarId?: string | null;
+
+  @OneToOne(() => UserDetailEntity, (e) => e.user, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'userDetailId' })
+  detail?: UserDetailEntity | null;
+
+  @Index()
+  @Column({ type: 'text', nullable: true })
+  detailId?: string | null;
+
+  /** One-to-many relations */
+  @OneToMany(() => UserAuthSessionEntity, (e) => e.user)
   @JoinColumn()
-  authSessions: AuthSessionEntity[];
+  authSessions: UserAuthSessionEntity[];
+
+  @OneToMany(() => UserNotification, (e) => e.user)
+  @JoinColumn()
+  notifications: UserNotification[];
+
+  /** Many-to-one relations */
+  @ManyToOne(() => CompanyEntity, (e) => e.users, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'companyId' })
+  company: CompanyEntity;
+
+  @Index()
+  @Column({ type: 'text' })
+  companyId: string;
 
   @CreateDateColumn()
   createdAt: Date;
