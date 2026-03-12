@@ -12,13 +12,11 @@ import {
 import { User } from '@crm/types';
 import { Cryptography } from '@crm/utils';
 import { PaginatedResDto } from '@crm/http';
-import { Role, UserStatus, AuthProvider } from '@crm/types';
+import { Role, UserStatus } from '@crm/types';
 import { UserEntity, UserCompanyEntity } from '@crm/database';
 
 import { UserMapper } from '../mappers';
-import { MailService } from '../../mail/services';
 import { AuthService } from '../../auth/services';
-import { InvitationService } from '../modules/invitation/services';
 import { NewUserDto, ListUsersDto, CreateUserDto, UpdateUserDto } from '../dto';
 
 @Injectable()
@@ -27,7 +25,6 @@ export class UserService {
     private readonly authService: AuthService,
     private readonly mailService: MailService,
     private readonly userMapper: UserMapper,
-    private readonly invitationService: InvitationService,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(UserCompanyEntity)
@@ -124,13 +121,6 @@ export class UserService {
     if (!user) {
       this.#logger.error(`${msg} - Failed`);
       throw new InternalServerErrorException('Failed to create user');
-    }
-
-    // Accept invitation if token provided
-    if (dto.invitationToken) {
-      try {
-        await this.invitationService.accept(dto.invitationToken);
-      } catch {}
     }
 
     try {

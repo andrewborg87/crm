@@ -30,7 +30,6 @@ export class AuthService {
     private readonly userMapper: UserMapper,
     private readonly sessionService: SessionService,
     private readonly mailService: MailService,
-    private readonly invitationService: InvitationService,
     private readonly configService: ConfigService<{ auth: AuthConfig }>,
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
@@ -71,11 +70,6 @@ export class AuthService {
     // Generate a random hash for the session
     const str = `${dto.email}${DateTime.utc().toMillis().toString()}`;
     const randomHash = Cryptography.hash(str);
-
-    // Accept invitation if token provided
-    if (dto.invitationToken) {
-      await this.invitationService.accept(dto.invitationToken);
-    }
 
     try {
       // Create a new auth session for the user
