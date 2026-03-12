@@ -37,11 +37,11 @@ import { PlatformClientEntity } from './platform-client.entity';
 import { TradingAccountEntity } from './trading-account.entity';
 import { LoyaltyHistoryEntity } from './loyalty-history.entity';
 import { UserAuthSessionEntity } from './user-auth-session.entity';
-import { TradingAccountNote } from './trading-account-note.entity';
 import { UserNotificationEntity } from './user-notification.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
 import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
 import { PaymentTransactionEntity } from './payment-transaction.entity';
+import { TradingAccountNoteEntity } from './trading-account-note.entity';
 import { TradingAccountTypeEntity } from './trading-account-type.entity';
 import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 import { TradingAccountTypeLeverageEntity } from './trading-account-type-leverage.entity';
@@ -132,9 +132,9 @@ export class CompanyEntity {
   @JoinColumn()
   tradingAccounts: TradingAccountEntity[];
 
-  @OneToMany(() => TradingAccountNote, (e) => e.company)
+  @OneToMany(() => TradingAccountNoteEntity, (e) => e.company)
   @JoinColumn()
-  tradingAccountNotes: TradingAccountNote[];
+  tradingAccountNotes: TradingAccountNoteEntity[];
 
   @OneToMany(() => TradingAccountTypeEntity, (e) => e.company)
   @JoinColumn()

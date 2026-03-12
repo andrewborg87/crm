@@ -11,8 +11,10 @@ import { TenantEntity } from './entities/tenant.entity';
 import { WalletEntity } from './entities/wallet.entity';
 import { ChannelEntity } from './entities/channel.entity';
 import { CompanyEntity } from './entities/company.entity';
+import { LoyaltyEntity } from './entities/loyalty.entity';
 import { AuditLogEntity } from './entities/audit-log.entity';
 import { UserNoteEntity } from './entities/user-note.entity';
+import { WheelSpinEntity } from './entities/wheel-spin.entity';
 import { UserAvatarEntity } from './entities/user-avatar.entity';
 import { UserDetailEntity } from './entities/user-detail.entity';
 import { IntegrationEntity } from './entities/integration.entity';
@@ -26,12 +28,14 @@ import { TenantCompanyEntity } from './entities/tenant-company.entity';
 import { CompanySettingEntity } from './entities/company-setting.entity';
 import { PlatformClientEntity } from './entities/platform-client.entity';
 import { TradingAccountEntity } from './entities/trading-account.entity';
-import { TradingAccountNote } from './entities/trading-account-note.entity';
+import { LoyaltyHistoryEntity } from './entities/loyalty-history.entity';
 import { UserAuthSessionEntity } from './entities/user-auth-session.entity';
 import { UserNotificationEntity } from './entities/user-notification.entity';
 import { WalletTransactionEntity } from './entities/wallet-transaction.entity';
 import { TenantAuthSessionEntity } from './entities/tenant-auth-session.entity';
 import { TradingAccountTagEntity } from './entities/trading-account-tag.entity';
+import { PaymentTransactionEntity } from './entities/payment-transaction.entity';
+import { TradingAccountNoteEntity } from './entities/trading-account-note.entity';
 import { TradingAccountTypeEntity } from './entities/trading-account-type.entity';
 import { WalletTransactionHistoryEntity } from './entities/wallet-transaction-history.entity';
 import { TradingAccountTypeLeverageEntity } from './entities/trading-account-type-leverage.entity';
@@ -118,7 +122,10 @@ export class DatabaseModule {
         CompanySettingEntity,
         ExchangeRateEntity,
         IntegrationEntity,
+        LoyaltyEntity,
+        LoyaltyHistoryEntity,
         OrganisationEntity,
+        PaymentTransactionEntity,
         PlatformClientEntity,
         ServerEntity,
         TagEntity,
@@ -126,7 +133,7 @@ export class DatabaseModule {
         TenantAuthSessionEntity,
         TenantCompanyEntity,
         TradingAccountEntity,
-        TradingAccountNote,
+        TradingAccountNoteEntity,
         TradingAccountTagEntity,
         TradingAccountTypeEntity,
         TradingAccountTypeLeverageEntity,
@@ -142,6 +149,7 @@ export class DatabaseModule {
         WalletEntity,
         WalletTransactionEntity,
         WalletTransactionHistoryEntity,
+        WheelSpinEntity,
       ],
       exports: ['DB_CONFIG_OPTIONS'],
     };

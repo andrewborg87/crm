@@ -17,9 +17,9 @@ import { AuditLogEntity } from './audit-log.entity';
 import { UserNoteEntity } from './user-note.entity';
 import { OrganisationEntity } from './organisation.entity';
 import { TenantCompanyEntity } from './tenant-company.entity';
-import { TradingAccountNote } from './trading-account-note.entity';
 import { TenantAuthSessionEntity } from './tenant-auth-session.entity';
 import { TradingAccountTagEntity } from './trading-account-tag.entity';
+import { TradingAccountNoteEntity } from './trading-account-note.entity';
 
 @Entity({ name: 'tenant' })
 @Unique(['organisationId', 'email'])
@@ -60,9 +60,9 @@ export class TenantEntity {
   @JoinColumn()
   tenantCompanies: TenantCompanyEntity[];
 
-  @OneToMany(() => TradingAccountNote, (e) => e.author)
+  @OneToMany(() => TradingAccountNoteEntity, (e) => e.author)
   @JoinColumn()
-  tradingAccountNotes: TradingAccountNote[];
+  tradingAccountNotes: TradingAccountNoteEntity[];
 
   @OneToMany(() => TradingAccountTagEntity, (e) => e.taggedByTenant)
   @JoinColumn()

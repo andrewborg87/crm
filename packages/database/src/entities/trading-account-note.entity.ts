@@ -14,7 +14,7 @@ import { CompanyEntity } from './company.entity';
 import { TradingAccountEntity } from './trading-account.entity';
 
 @Entity({ name: 'trading_account_note' })
-export class TradingAccountNote {
+export class TradingAccountNoteEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

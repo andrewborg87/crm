@@ -24,12 +24,12 @@ export class UserIdValidator implements ValidatorConstraintInterface, PipeTransf
 
   async #exec(value: string): Promise<boolean> {
     if (!isUUID(value)) {
-      throw new BadRequestException('UserId must be a valid uuid');
+      throw new BadRequestException('userId must be a valid uuid');
     }
 
     const entity = await this.repo.findOne({ where: { id: value } });
     if (!entity) {
-      throw new BadRequestException('UserId must reference an existing user');
+      throw new BadRequestException(`userId must reference an existing entity, ${value} provided.`);
     }
 
     return true;

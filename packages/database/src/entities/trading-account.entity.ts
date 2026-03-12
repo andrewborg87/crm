@@ -16,9 +16,9 @@ import { Platform, Monetization, TradingAccountStatus } from '@crm/types';
 import { UserEntity } from './user.entity';
 import { ServerEntity } from './server.entity';
 import { CompanyEntity } from './company.entity';
-import { TradingAccountNote } from './trading-account-note.entity';
 import { WalletTransactionEntity } from './wallet-transaction.entity';
 import { TradingAccountTagEntity } from './trading-account-tag.entity';
+import { TradingAccountNoteEntity } from './trading-account-note.entity';
 import { WalletTransactionHistoryEntity } from './wallet-transaction-history.entity';
 
 @Entity({ name: 'trading_account' })
@@ -58,9 +58,9 @@ export class TradingAccountEntity {
   password: string;
 
   /** One-to-many relations */
-  @OneToMany(() => TradingAccountNote, (e) => e.tradingAccount)
+  @OneToMany(() => TradingAccountNoteEntity, (e) => e.tradingAccount)
   @JoinColumn()
-  notes: TradingAccountNote[];
+  notes: TradingAccountNoteEntity[];
 
   @OneToMany(() => TradingAccountTagEntity, (e) => e.tradingAccount)
   @JoinColumn()

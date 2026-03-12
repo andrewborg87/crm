@@ -64,6 +64,9 @@ export class UserEntity {
   @Column({ type: 'bool', default: false })
   isEmailVerified: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerifiedAt?: Date | null;
+
   @Column({ type: 'bool', default: false })
   isTermsAccepted: boolean;
 
